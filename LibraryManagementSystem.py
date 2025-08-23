@@ -1,44 +1,59 @@
+# Initialize a dictionary to store library books.
+# Format: "Book Title": ("Author Name", Availability Status)
+# Availability: True = Available, False = Not Available
 library = {
     "Harry Potter": ("J.K Rowling", True),
     "The Hobbit": ("J.R.R. Tolkien", True),
     "1984": ("George Orwell", False)
 }
+
+# List to keep track of all borrow and return transactions
 transactions = []
 
+# Function to display all books in the library with their status
 def view_books():
     print("\nLibrary Books:")
+    # Loop through each book in the library dictionary
     for title, (author, available) in library.items():
         status = "available" if available else "not available"
         print(f"{title} by {author} is {status}.")
 
+# Function to borrow a book from the library
 def borrow_book():
     try:
+        # Ask the user to enter the book title they want to borrow
         user_input = input("Enter book you want to borrow: ")
         
-        
+        # Search for the book in the library (case-insensitive match)
         book_found = None
         for title in library.keys():
             if user_input.lower() in title.lower() or title.lower() in user_input.lower():
                 book_found = title
                 break
         
+        # If the book is not in the library, raise an error
         if book_found is None:
             raise KeyError("Book not available in library!")
             
         author, available = library[book_found]
+        # If the book is available, mark it as borrowed
         if available:
             library[book_found] = (author, False)
             print(f"You have borrowed '{book_found}'.")
             transactions.append({"book": book_found, "action": "issued"})
         else:
+            # If the book is already borrowed
             print(f"Sorry!, '{book_found}' is not available for borrowing.")
     except KeyError as e:
+        # Handle the case when the book is not in the library
         print(f"Error! {e}")
 
+# Function to return a borrowed book
 def return_book():
+    # Ask the user to enter the book title they want to return
     user_input = input("Enter the book you want to return: ")
     
-    
+    # Search for the book in the library
     book_found = None
     for title in library.keys():
         if user_input.lower() in title.lower() or title.lower() in user_input.lower():
@@ -47,27 +62,35 @@ def return_book():
     
     if book_found:
         author, available = library[book_found]
+        # Check if the book was borrowed
         if not available:
             library[book_found] = (author, True)
             print(f"Thank you for returning '{book_found}'.")
             transactions.append({"book": book_found, "action": "returned"})
         else:
+            # If the book was never issued
             print(f"'{book_found}' was not issued.")
     else:
+        # Book does not belong to this library
         print("This book does not belong to our library.")
 
+# Function to add a new book to the library
 def add_book():
     title = input("Enter the title of the new book: ")
     author = input("Enter the author of the new book: ")
+    # Check if the book already exists
     if title in library:
         print("Book already exists in the library.")
     else:
+        # Add the new book with availability set to True
         library[title] = (author, True)
         print(f"Book '{title}' by {author} added to the library.")
 
+# Function to search for a book by its title
 def search_book():
     search = input("Enter the book title to search: ")
     found = False
+    # Loop through all books and search for a match
     for title, (author, available) in library.items():
         if search.lower() in title.lower():
             status = "Available" if available else "Not Available"
@@ -76,6 +99,7 @@ def search_book():
     if not found:
         print("No matching book found.")
 
+# Function to view all past transactions (borrow and return)
 def view_transactions():
     print("\nTransaction History:")
     if not transactions:
@@ -84,8 +108,10 @@ def view_transactions():
         for t in transactions:
             print(f"Book: {t['book']} - Action: {t['action']}")
 
+# Main function to display the menu and handle user input
 def main():
     while True:
+        # Display the library menu options
         print("\n--- Library Menu ---")
         print("1. View Books")
         print("2. Borrow Book")
@@ -97,6 +123,7 @@ def main():
         
         choice = input("Enter your choice: ")
         
+        # Execute the corresponding function based on user input
         if choice == '1':
             view_books()
         elif choice == '2':
@@ -115,5 +142,6 @@ def main():
         else:
             print("Invalid choice. Try again.")
 
+# Run the program
 if __name__ == "__main__":
     main()
