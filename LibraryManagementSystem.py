@@ -1,147 +1,119 @@
-# Initialize a dictionary to store library books.
-# Format: "Book Title": ("Author Name", Availability Status)
-# Availability: True = Available, False = Not Available
+import tkinter as tk
+from tkinter import messagebox, simpledialog
+
+# Initialize library and transactions
 library = {
     "Harry Potter": ("J.K Rowling", True),
     "The Hobbit": ("J.R.R. Tolkien", True),
     "1984": ("George Orwell", False)
 }
 
-# List to keep track of all borrow and return transactions
 transactions = []
 
-# Function to display all books in the library with their status
+# Functions
 def view_books():
-    print("\nLibrary Books:")
-    # Loop through each book in the library dictionary
+    books_window = tk.Toplevel(root)
+    books_window.title("Library Books")
+    tk.Label(books_window, text="Library Books", font=("Arial", 14, "bold")).pack(pady=10)
+    
     for title, (author, available) in library.items():
-        status = "available" if available else "not available"
-        print(f"{title} by {author} is {status}.")
+        status = "Available" if available else "Not Available"
+        tk.Label(books_window, text=f"{title} by {author} - {status}").pack(anchor="w")
 
-# Function to borrow a book from the library
 def borrow_book():
-    try:
-        # Ask the user to enter the book title they want to borrow
-        user_input = input("Enter book you want to borrow: ")
-        
-        # Search for the book in the library (case-insensitive match)
+    book = simpledialog.askstring("Borrow Book", "Enter book title to borrow:")
+    if book:
         book_found = None
         for title in library.keys():
-            if user_input.lower() in title.lower() or title.lower() in user_input.lower():
+            if book.lower() in title.lower():
                 book_found = title
                 break
-        
-        # If the book is not in the library, raise an error
-        if book_found is None:
-            raise KeyError("Book not available in library!")
-            
-        author, available = library[book_found]
-        # If the book is available, mark it as borrowed
-        if available:
-            library[book_found] = (author, False)
-            print(f"You have borrowed '{book_found}'.")
-            transactions.append({"book": book_found, "action": "issued"})
+        if book_found:
+            author, available = library[book_found]
+            if available:
+                library[book_found] = (author, False)
+                transactions.append({"book": book_found, "action": "issued"})
+                messagebox.showinfo("Success", f"You borrowed '{book_found}'.")
+            else:
+                messagebox.showwarning("Unavailable", f"'{book_found}' is not available.")
         else:
-            # If the book is already borrowed
-            print(f"Sorry!, '{book_found}' is not available for borrowing.")
-    except KeyError as e:
-        # Handle the case when the book is not in the library
-        print(f"Error! {e}")
+            messagebox.showerror("Error", "Book not found in the library.")
 
-# Function to return a borrowed book
 def return_book():
-    # Ask the user to enter the book title they want to return
-    user_input = input("Enter the book you want to return: ")
-    
-    # Search for the book in the library
-    book_found = None
-    for title in library.keys():
-        if user_input.lower() in title.lower() or title.lower() in user_input.lower():
-            book_found = title
-            break
-    
-    if book_found:
-        author, available = library[book_found]
-        # Check if the book was borrowed
-        if not available:
-            library[book_found] = (author, True)
-            print(f"Thank you for returning '{book_found}'.")
-            transactions.append({"book": book_found, "action": "returned"})
+    book = simpledialog.askstring("Return Book", "Enter book title to return:")
+    if book:
+        book_found = None
+        for title in library.keys():
+            if book.lower() in title.lower():
+                book_found = title
+                break
+        if book_found:
+            author, available = library[book_found]
+            if not available:
+                library[book_found] = (author, True)
+                transactions.append({"book": book_found, "action": "returned"})
+                messagebox.showinfo("Success", f"Thank you for returning '{book_found}'.")
+            else:
+                messagebox.showinfo("Info", f"'{book_found}' was not issued.")
         else:
-            # If the book was never issued
-            print(f"'{book_found}' was not issued.")
-    else:
-        # Book does not belong to this library
-        print("This book does not belong to our library.")
+            messagebox.showerror("Error", "This book does not belong to the library.")
 
-# Function to add a new book to the library
 def add_book():
-    title = input("Enter the title of the new book: ")
-    author = input("Enter the author of the new book: ")
-    # Check if the book already exists
-    if title in library:
-        print("Book already exists in the library.")
-    else:
-        # Add the new book with availability set to True
-        library[title] = (author, True)
-        print(f"Book '{title}' by {author} added to the library.")
+    title = simpledialog.askstring("Add Book", "Enter book title:")
+    author = simpledialog.askstring("Add Book", "Enter author name:")
+    if title and author:
+        if title in library:
+            messagebox.showinfo("Exists", "Book already exists in the library.")
+        else:
+            library[title] = (author, True)
+            messagebox.showinfo("Success", f"Book '{title}' by {author} added.")
 
-# Function to search for a book by its title
 def search_book():
-    search = input("Enter the book title to search: ")
-    found = False
-    # Loop through all books and search for a match
-    for title, (author, available) in library.items():
-        if search.lower() in title.lower():
-            status = "Available" if available else "Not Available"
-            print(f"Found: {title} by {author} - {status}")
-            found = True
-    if not found:
-        print("No matching book found.")
+    search = simpledialog.askstring("Search Book", "Enter title to search:")
+    if search:
+        result_window = tk.Toplevel(root)
+        result_window.title("Search Results")
+        tk.Label(result_window, text="Search Results", font=("Arial", 14, "bold")).pack(pady=10)
+        
+        found = False
+        for title, (author, available) in library.items():
+            if search.lower() in title.lower():
+                status = "Available" if available else "Not Available"
+                tk.Label(result_window, text=f"{title} by {author} - {status}").pack(anchor="w")
+                found = True
+        if not found:
+            tk.Label(result_window, text="No matching book found.").pack()
 
-# Function to view all past transactions (borrow and return)
 def view_transactions():
-    print("\nTransaction History:")
+    trans_window = tk.Toplevel(root)
+    trans_window.title("Transactions")
+    tk.Label(trans_window, text="Transaction History", font=("Arial", 14, "bold")).pack(pady=10)
+    
     if not transactions:
-        print("No transactions yet.")
+        tk.Label(trans_window, text="No transactions yet.").pack()
     else:
         for t in transactions:
-            print(f"Book: {t['book']} - Action: {t['action']}")
+            tk.Label(trans_window, text=f"Book: {t['book']} - Action: {t['action']}").pack(anchor="w")
 
-# Main function to display the menu and handle user input
-def main():
-    while True:
-        # Display the library menu options
-        print("\n--- Library Menu ---")
-        print("1. View Books")
-        print("2. Borrow Book")
-        print("3. Return Book")
-        print("4. Add Book")
-        print("5. Search Book")
-        print("6. View Transactions")
-        print("7. Exit")
-        
-        choice = input("Enter your choice: ")
-        
-        # Execute the corresponding function based on user input
-        if choice == '1':
-            view_books()
-        elif choice == '2':
-            borrow_book()
-        elif choice == '3':
-            return_book()
-        elif choice == '4':
-            add_book()
-        elif choice == '5':
-            search_book()
-        elif choice == '6':
-            view_transactions()
-        elif choice == '7':
-            print("Thank you for using the library system!")
-            break
-        else:
-            print("Invalid choice. Try again.")
+# Main GUI Window
+root = tk.Tk()
+root.title("Library Management System")
+root.geometry("400x400")
+root.config(bg="#f0f0f0")
 
-# Run the program
-if __name__ == "__main__":
-    main()
+# Title
+tk.Label(root, text="Library Management System", font=("Arial", 16, "bold"), bg="#f0f0f0").pack(pady=20)
+
+# Buttons
+btn_frame = tk.Frame(root, bg="#f0f0f0")
+btn_frame.pack(pady=10)
+
+tk.Button(btn_frame, text="View Books", width=20, command=view_books).grid(row=0, column=0, pady=5)
+tk.Button(btn_frame, text="Borrow Book", width=20, command=borrow_book).grid(row=1, column=0, pady=5)
+tk.Button(btn_frame, text="Return Book", width=20, command=return_book).grid(row=2, column=0, pady=5)
+tk.Button(btn_frame, text="Add Book", width=20, command=add_book).grid(row=3, column=0, pady=5)
+tk.Button(btn_frame, text="Search Book", width=20, command=search_book).grid(row=4, column=0, pady=5)
+tk.Button(btn_frame, text="View Transactions", width=20, command=view_transactions).grid(row=5, column=0, pady=5)
+tk.Button(btn_frame, text="Exit", width=20, command=root.quit).grid(row=6, column=0, pady=5)
+
+root.mainloop()
